@@ -55,13 +55,16 @@ def get_video_fps(video_path):
         num, den = int(out), 1
     return num / den
 
-def extract_frames(video_path, out_dir):
+def extract_frames(video_path, out_dir, quality=2):
     os.makedirs(out_dir, exist_ok=True)
     pattern = os.path.join(out_dir, 'frame_%06d.jpg')
     # High-quality JPEG extraction (~original quality)
     subprocess.run([
         'ffmpeg', '-i', video_path,
-        '-vsync', '0', '-qscale:v', '2', pattern
+        '-vsync', '0',
+        '-qscale:v', str(quality),
+        '-qmin', str(quality),
+        pattern
     ], check=True)
 
 '''
@@ -147,8 +150,10 @@ def get_start_datetime(video_path):
 
 def main():
     parser = argparse.ArgumentParser(description='Extract JPEG frames and full geotag from DJI video')
-    parser.add_argument('--input-dir', default='.', help='Directory with video & SRT files')
-    parser.add_argument('--output-dir', default='.', help='Directory for output frames')
+    parser.add_argument('-i', '--input-dir', default='.', help='Directory with video & SRT files')
+    parser.add_argument('-o', '--output-dir', default='.', help='Directory for output frames')
+    parser.add_argument('-q', '--quality', type=int, default=2, choices=range(1, 32),
+                    help='JPEG quality (1=best, 31=worst). Default is 2')
     args = parser.parse_args()
 
     if len(sys.argv) == 1:
@@ -176,7 +181,7 @@ def main():
         frames_dir = os.path.join(out_root, base)
 
         print(f"Processing {fname} -> {frames_dir}")
-        extract_frames(video_path, frames_dir)
+        extract_frames(video_path, frames_dir, args.quality)
         geotag_frames(frames_dir, srt_path, fps, start_dt)
         print(f"Completed: {base}")
 
