@@ -71,7 +71,7 @@ def extract_frames(video_path, out_dir, quality, start, end, fps_sample):
     '-loglevel', 'error',
     '-stats_period', '5',
     # <-- Preserve original frame timing
-    '-fps_mode', 'passthrough',
+    #'-fps_mode', 'passthrough',
     ]
     
     if start is not None:
